@@ -1,0 +1,12 @@
+subject = input("Enter your subject: ")
+teacher = input("Enter your teacher: ")
+adjective = input("Enter your adjective: ")
+activity = input("Enter your activity: ")
+friend = input("Enter your friend: ")
+adjective1 = input("Enter your adjective: ")
+
+print(f"Today i went to school")
+print(f"My first subject was {subject}")
+print(f"{teacher} gave us {adjective} activity")
+print(f"My friend {friend} and I started {activity}")
+print(f"At the end of the class. I am {adjective1} because i learned a lot and had a great day!")
