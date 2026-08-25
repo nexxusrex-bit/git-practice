@@ -20,3 +20,9 @@ access_level = "Full access" if user_role == "Admin" else "Limited access"
 
 
 print(access_level)
+
+name = input("Enter your name: ")
+if len(name) > 12:
+    print("Your name is too long")
+else:
+    print(f"Welcome {name}!")
