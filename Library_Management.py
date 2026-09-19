@@ -166,7 +166,7 @@ while True:
             status = get_book_status(books, book_id)
 
             if status is None:
-                print("The book is not found or unavailable.")
+                print("The book is not exist on the system.")
             elif status == "Borrowed":
                 print("This book is already borrowed.")
             elif status == "Missing":
