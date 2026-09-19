@@ -1,9 +1,15 @@
 from datetime import date
 
-books = []  # will hold all books; each book = [id, title, author, status, borrower, due_date]
+# books = [] will hold all books; each book = [id, title, author, status, borrower, due_date, borrower_type]
+books = [
+    ["001", "Computer Programming", "Joshua Rex Balsomo", "Available", "", "", ""],
+    ["002", "Mathematics of Modern World", "Jet Marc Canonigo", "Borrowed", "Brylle Soberano", "2026-11-15", "student"],
+]
+allowed_borrower_types = ["student", "teacher", "staff"]
+STAFF_PASSWORD = "staff123"
 
 def add_book(books, book_id, title, author):
-    new_book = [book_id, title, author, "Available", "", ""]
+    new_book = [book_id, title, author, "Available", "", "", ""]
     books.append(new_book)
     return books
 
@@ -23,6 +29,10 @@ def view_books(books):
     if len(books) == 0:
         print("No books in the system yet.")
     else:
+        available_count = 0
+        borrowed_count = 0
+        missing_count = 0
+
         print("\n===== BOOK LIST =====")
         for book in books:
             print("ID:", book[0])
@@ -31,15 +41,26 @@ def view_books(books):
             print("Status:", book[3])
             print("Borrower:", book[4])
             print("Due Date:", book[5])
+            print("Borrower Type:", book[6])
             print("-----------------------")
 
-def borrow_book(books, book_id, borrower_name, due_date):
+            if book[3] == "Available":
+                available_count = available_count + 1
+            elif book[3] == "Borrowed":
+                borrowed_count = borrowed_count + 1
+            elif book[3] == "Missing":
+                missing_count = missing_count + 1
+
+        print("Total Available:", available_count, "| Borrowed:", borrowed_count, "| Missing:", missing_count)
+
+def borrow_book(books, book_id, borrower_name, borrower_type, due_date):
     for book in books:
         if book[0] == book_id:
             if book[3] == "Available":
                 book[3] = "Borrowed"
                 book[4] = borrower_name
                 book[5] = due_date
+                book[6] = borrower_type
                 return True
             else:
                 return False
@@ -52,6 +73,7 @@ def return_book(books, book_id):
                 book[3] = "Available"
                 book[4] = ""
                 book[5] = ""
+                book[6] = ""
                 return True
             else:
                 return False
@@ -104,30 +126,35 @@ while True:
     choice = input("Enter your choice: ")
 
     if choice == "1":
-        book_id = input("Enter Book ID (or type 'cancel' to go back): ").strip()
+        staff_password = input("Enter staff password to add a book: ").strip()
 
-        while book_id == "" or (book_id.lower() != "cancel" and is_duplicate_id(books, book_id)):
-            if book_id == "":
-                print("Book ID cannot be blank.")
-            else:
-                print("That Book ID already exists. Please use a different one.")
+        if staff_password == STAFF_PASSWORD:
             book_id = input("Enter Book ID (or type 'cancel' to go back): ").strip()
 
-        if book_id.lower() == "cancel":
-            print("Add Book cancelled.")
-        else:
-            title = input("Enter Title: ").strip()
-            while title == "":
-                print("Title cannot be blank.")
+            while book_id == "" or (book_id.lower() != "cancel" and is_duplicate_id(books, book_id)):
+                if book_id == "":
+                    print("Book ID cannot be blank.")
+                else:
+                    print("That Book ID already exists. Please use a different one.")
+                book_id = input("Enter Book ID (or type 'cancel' to go back): ").strip()
+
+            if book_id.lower() == "cancel":
+                print("Add Book cancelled.")
+            else:
                 title = input("Enter Title: ").strip()
+                while title == "":
+                    print("Title cannot be blank.")
+                    title = input("Enter Title: ").strip()
 
-            author = input("Enter Author: ").strip()
-            while author == "":
-                print("Author cannot be blank.")
                 author = input("Enter Author: ").strip()
+                while author == "":
+                    print("Author cannot be blank.")
+                    author = input("Enter Author: ").strip()
 
-            books = add_book(books, book_id, title, author)
-            print("Book added successfully!")
+                books = add_book(books, book_id, title, author)
+                print("Book added successfully!")
+        else:
+            print("Incorrect password. Only library staff can add books.")
     elif choice == "2":
         view_books(books)
     elif choice == "3":
@@ -136,24 +163,43 @@ while True:
         if book_id.lower() == "cancel":
             print("Borrow Book cancelled.")
         else:
-            borrower_name = input("Enter your name (or type 'cancel' to go back): ").strip()
-            while borrower_name == "":
-                print("Name cannot be blank.")
-                borrower_name = input("Enter your name (or type 'cancel' to go back): ").strip()
+            status = get_book_status(books, book_id)
 
-            if borrower_name.lower() == "cancel":
-                print("Borrow Book cancelled.")
+            if status is None:
+                print("The book is not found or unavailable.")
+            elif status == "Borrowed":
+                print("This book is already borrowed.")
+            elif status == "Missing":
+                print("This book is marked Missing and cannot be borrowed.")
             else:
-                due_date = input("Enter due date (YYYY-MM-DD): ")
+                borrower_name = input("Enter your name (or type 'cancel' to go back): ").strip()
+                while borrower_name == "":
+                    print("Name cannot be blank.")
+                    borrower_name = input("Enter your name (or type 'cancel' to go back): ").strip()
 
-                if len(due_date) == 10 and due_date[4] == "-" and due_date[7] == "-":
-                    success = borrow_book(books, book_id, borrower_name, due_date)
-                    if success:
-                        print("Book borrowed successfully!")
-                    else:
-                        print("Book not available or not found.")
+                if borrower_name.lower() == "cancel":
+                    print("Borrow Book cancelled.")
                 else:
-                    print("Invalid date format. Please use YYYY-MM-DD, example: 2026-01-01")
+                    borrower_type_input = input("Are you a Student, Teacher, or Staff? (or type 'cancel' to go back): ").strip()
+
+                    while borrower_type_input.lower() not in allowed_borrower_types and borrower_type_input.lower() != "cancel":
+                        print("Sorry, only Students, Teachers, or Staff can borrow books.")
+                        borrower_type_input = input("Are you a Student, Teacher, or Staff? (or type 'cancel' to go back): ").strip()
+
+                    if borrower_type_input.lower() == "cancel":
+                        print("Borrow Book cancelled.")
+                    else:
+                        borrower_type = borrower_type_input.capitalize()
+                        due_date = input("Enter due date (YYYY-MM-DD): ")
+
+                        if len(due_date) == 10 and due_date[4] == "-" and due_date[7] == "-":
+                            success = borrow_book(books, book_id, borrower_name, borrower_type, due_date)
+                            if success:
+                                print("Book borrowed successfully!")
+                            else:
+                                print("Book not available or not found.")
+                        else:
+                            print("Invalid date format. Please use YYYY-MM-DD, example: 2026-01-01")
     elif choice == "4":
         book_id = input("Enter Book ID to return: ")
         success = return_book(books, book_id)
